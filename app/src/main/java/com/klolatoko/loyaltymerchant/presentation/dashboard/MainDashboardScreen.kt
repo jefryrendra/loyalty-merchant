@@ -1,9 +1,11 @@
 package com.klolatoko.loyaltymerchant.presentation.dashboard
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,12 +16,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,12 +41,16 @@ fun MainDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val view = LocalView.current
 
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    val threshold = with(density) { 80.dp.toPx() }
+    val collapseProgress = (scrollState.value / threshold).coerceIn(0f, 1f)
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            val isKasirTab = uiState.selectedTab == MerchantTab.KASIR
             val insetsController = WindowCompat.getInsetsController(window, view)
-            insetsController.isAppearanceLightStatusBars = !isKasirTab
+            insetsController.isAppearanceLightStatusBars = false
         }
     }
 
@@ -55,6 +63,14 @@ fun MainDashboardScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        topBar = {
+            MerchantHeaderSection(
+                storeName = uiState.merchantProfile.storeName,
+                pendingCount = uiState.pendingClaims.size,
+                collapseProgress = collapseProgress,
+                onNotificationClick = { viewModel.selectTab(MerchantTab.APPROVAL) }
+            )
+        },
         bottomBar = {
             BottomNavigationBar(
                 selectedTab = uiState.selectedTab,
@@ -67,12 +83,12 @@ fun MainDashboardScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding())
+                .padding(innerPadding)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
             ) {
                 when (uiState.selectedTab) {
                     MerchantTab.KASIR -> KasirTab(
@@ -119,16 +135,6 @@ fun MainDashboardScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // Sticky Emerald Status Bar background for Kasir tab to guarantee white battery info visibility
-            if (uiState.selectedTab == MerchantTab.KASIR) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsTopHeight(WindowInsets.statusBars)
-                        .background(Emerald700)
-                )
-            }
-
             // Toast Floating Notification
             AnimatedVisibility(
                 visible = uiState.toastMessage != null,
@@ -136,7 +142,6 @@ fun MainDashboardScreen(
                 exit = fadeOut(),
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .statusBarsPadding()
                     .padding(top = 16.dp)
             ) {
                 uiState.toastMessage?.let { msg ->
@@ -201,6 +206,90 @@ fun MainDashboardScreen(
             onDismiss = { viewModel.closeApprovalDetailModal() }
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MerchantHeaderSection(
+    storeName: String,
+    pendingCount: Int,
+    collapseProgress: Float,
+    onNotificationClick: () -> Unit
+) {
+    CenterAlignedTopAppBar(
+        windowInsets = WindowInsets.statusBars,
+        title = {
+            AnimatedContent(
+                targetState = collapseProgress > 0.6f,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "TitleTransition"
+            ) { isCollapsed ->
+                if (isCollapsed) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .background(Color.White.copy(0.15f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text("🥞", fontSize = 14.sp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = storeName,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "KLOLA LOYALTY",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+        },
+        navigationIcon = {
+            Box(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("JR", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+        },
+        actions = {
+            IconButton(onClick = onNotificationClick) {
+                BadgedBox(
+                    badge = {
+                        if (pendingCount > 0) {
+                            Badge { Text("$pendingCount") }
+                        } else {
+                            Badge { Text("2") }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Notifikasi",
+                        tint = Color.White
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = Emerald600,
+            titleContentColor = Color.White,
+            actionIconContentColor = Color.White,
+            navigationIconContentColor = Color.White
+        )
+    )
 }
 
 @Composable

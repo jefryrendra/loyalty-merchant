@@ -31,7 +31,6 @@ fun ApprovalTab(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .statusBarsPadding()
             .padding(top = 12.dp, start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {

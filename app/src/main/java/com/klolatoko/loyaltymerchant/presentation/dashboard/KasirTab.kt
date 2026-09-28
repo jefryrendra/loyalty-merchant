@@ -446,7 +446,6 @@ fun KasirGreenHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
                 .padding(top = 12.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
         ) {
             Text(
