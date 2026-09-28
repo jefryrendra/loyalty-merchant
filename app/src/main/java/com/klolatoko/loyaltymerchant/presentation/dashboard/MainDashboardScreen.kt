@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -33,6 +36,53 @@ import androidx.core.view.WindowCompat
 import com.klolatoko.loyaltymerchant.domain.model.MerchantTab
 import com.klolatoko.loyaltymerchant.presentation.theme.*
 import kotlinx.coroutines.delay
+
+@Composable
+fun GridBackground(
+    isCrispGrid: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val bgBgColor = Color(0xFFEFF2EF)
+
+    Box(modifier = modifier.fillMaxSize().background(bgBgColor)) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val gridSpacing = if (isCrispGrid) 24.dp.toPx() else 20.dp.toPx()
+            val lineColor = if (isCrispGrid) {
+                Color(0xFF94A3B8).copy(alpha = 0.55f)
+            } else {
+                Color(0xFFCBD5E1).copy(alpha = 0.35f)
+            }
+            val strokeWidth = if (isCrispGrid) 0.8.dp.toPx() else 0.35.dp.toPx()
+
+            var x = 0f
+            while (x < size.width) {
+                drawLine(lineColor, Offset(x, 0f), Offset(x, size.height), strokeWidth)
+                x += gridSpacing
+            }
+            var y = 0f
+            while (y < size.height) {
+                drawLine(lineColor, Offset(0f, y), Offset(size.width, y), strokeWidth)
+                y += gridSpacing
+            }
+        }
+
+        if (!isCrispGrid) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                bgBgColor.copy(alpha = 0.25f),
+                                Color.Transparent,
+                                bgBgColor.copy(alpha = 0.20f)
+                            )
+                        )
+                    )
+            )
+        }
+    }
+}
 
 @Composable
 fun MainDashboardScreen(
@@ -78,13 +128,15 @@ fun MainDashboardScreen(
                 onTabSelected = { viewModel.selectTab(it) }
             )
         },
-        containerColor = Slate50
+        containerColor = Color(0xFFEFF2EF)
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            GridBackground()
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()

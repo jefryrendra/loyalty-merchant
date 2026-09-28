@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import coil.compose.AsyncImage
 import com.klolatoko.loyaltymerchant.presentation.theme.*
 
 @Composable
@@ -315,6 +317,66 @@ fun AuthHeroIllustration() {
 }
 
 @Composable
+fun BoxScope.AuthFormGridCanvas(modifier: Modifier = Modifier) {
+    val bgBgColor = Color(0xFFEFF2EF)
+    val giftImageUrl = "https://images.unsplash.com/photo-1513201099705-a9746e1e201f?q=80&w=600"
+
+    Box(
+        modifier = modifier
+            .matchParentSize()
+            .background(bgBgColor)
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .offset(x = 90.dp, y = 20.dp)
+                .size(340.dp)
+                .clip(CircleShape)
+                .graphicsLayer { alpha = 0.12f }
+        ) {
+            AsyncImage(
+                model = giftImageUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                bgBgColor,
+                                bgBgColor.copy(alpha = 0.85f),
+                                bgBgColor.copy(alpha = 0.40f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
+        }
+
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val gridSpacing = 20.dp.toPx()
+            val lineColor = Color(0xFFCBD5E1).copy(alpha = 0.35f)
+            val strokeWidth = 0.35.dp.toPx()
+
+            var x = 0f
+            while (x < size.width) {
+                drawLine(lineColor, Offset(x, 0f), Offset(x, size.height), strokeWidth)
+                x += gridSpacing
+            }
+            var y = 0f
+            while (y < size.height) {
+                drawLine(lineColor, Offset(0f, y), Offset(size.width, y), strokeWidth)
+                y += gridSpacing
+            }
+        }
+    }
+}
+
+@Composable
 fun AuthCustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
@@ -356,11 +418,11 @@ fun AuthCustomTextField(
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Emerald600,
-            unfocusedBorderColor = Color.Transparent,
-            disabledBorderColor = Color.Transparent,
-            focusedContainerColor = Slate100,
-            unfocusedContainerColor = Slate100,
-            disabledContainerColor = Slate100,
+            unfocusedBorderColor = Slate200,
+            disabledBorderColor = Slate200,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
             focusedTextColor = Slate800,
             unfocusedTextColor = Slate800
         )
@@ -456,7 +518,7 @@ fun SignInScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFEFF2EF))
     ) {
         AuthHeaderSection(
             title = "Masuk Kasir & Dashboard Merchant",
@@ -481,161 +543,165 @@ fun SignInScreen(
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 700.dp),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = Color.White,
+                color = Color(0xFFEFF2EF),
                 shadowElevation = 12.dp
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Login Merchant",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Slate800,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    AuthFormGridCanvas()
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Belum Daftarkan Toko? ",
-                            fontSize = 13.sp,
-                            color = Slate500,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Daftar",
-                            fontSize = 13.sp,
-                            color = Emerald600,
+                            text = "Login Merchant",
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable { onNavigateToSignUp() }
+                            fontSize = 22.sp,
+                            color = Slate800,
+                            textAlign = TextAlign.Center
                         )
-                    }
-
-                    Spacer(Modifier.height(22.dp))
-
-                    AuthCustomTextField(
-                        value = identity,
-                        onValueChange = { identity = it },
-                        label = "No. Handphone / Email Merchant",
-                        icon = Icons.Default.Person,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    AuthCustomTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = "Kata Sandi",
-                        icon = Icons.Default.Lock,
-                        isPassword = true,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(4.dp))
-
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
-                        TextButton(
-                            onClick = onNavigateToForgotPassword,
-                            contentPadding = PaddingValues(0.dp)
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "Lupa Kata Sandi?",
+                                text = "Belum Daftarkan Toko? ",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Daftar",
                                 fontSize = 13.sp,
                                 color = Emerald600,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(18.dp))
-
-                    Button(
-                        onClick = onSignIn,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(25.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
-                        enabled = !isLoading,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "Login",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
+                                modifier = Modifier.clickable { onNavigateToSignUp() }
                             )
                         }
-                    }
 
-                    Spacer(Modifier.height(14.dp))
+                        Spacer(Modifier.height(22.dp))
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        HorizontalDivider(
-                            modifier = Modifier.weight(1f),
-                            color = Slate200
+                        AuthCustomTextField(
+                            value = identity,
+                            onValueChange = { identity = it },
+                            label = "No. Handphone / Email Merchant",
+                            icon = Icons.Default.Person,
+                            enabled = !isLoading
                         )
-                        Text(
-                            text = "Atau Masuk Dengan",
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                            fontSize = 12.sp,
-                            color = Slate400,
-                            fontWeight = FontWeight.Medium
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.weight(1f),
-                            color = Slate200
-                        )
-                    }
 
-                    Surface(
-                        onClick = onSignIn,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, Slate200),
-                        shadowElevation = 1.dp
-                    ) {
+                        Spacer(Modifier.height(14.dp))
+
+                        AuthCustomTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Kata Sandi",
+                            icon = Icons.Default.Lock,
+                            isPassword = true,
+                            enabled = !isLoading
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            TextButton(
+                                onClick = onNavigateToForgotPassword,
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(
+                                    text = "Lupa Kata Sandi?",
+                                    fontSize = 13.sp,
+                                    color = Emerald600,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(18.dp))
+
+                        Button(
+                            onClick = onSignIn,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(25.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
+                            enabled = !isLoading,
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = "Login",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(14.dp))
+
                         Row(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            GoogleLogoIcon(modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(10.dp))
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = Slate200
+                            )
                             Text(
-                                text = "Lanjutkan dengan Google",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = Slate800
+                                text = "Atau Masuk Dengan",
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                fontSize = 12.sp,
+                                color = Slate400,
+                                fontWeight = FontWeight.Medium
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = Slate200
                             )
                         }
-                    }
 
-                    Spacer(Modifier.height(60.dp))
+                        Surface(
+                            onClick = onSignIn,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Slate200),
+                            shadowElevation = 1.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                GoogleLogoIcon(modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = "Lanjutkan dengan Google",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = Slate800
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(60.dp))
+                    }
                 }
             }
         }
@@ -665,7 +731,7 @@ fun SignUpScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFEFF2EF))
     ) {
         AuthHeaderSection(
             title = "Daftarkan Toko & Nikmati Loyalty System",
@@ -690,172 +756,176 @@ fun SignUpScreen(
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 700.dp),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = Color.White,
+                color = Color(0xFFEFF2EF),
                 shadowElevation = 12.dp
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Registrasi Merchant",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Slate800,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Sudah Punya Akun? ",
-                            fontSize = 13.sp,
-                            color = Slate500,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Masuk",
-                            fontSize = 13.sp,
-                            color = Emerald600,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable { onNavigateToSignIn() }
-                        )
-                    }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    AuthFormGridCanvas()
 
-                    Spacer(Modifier.height(22.dp))
-
-                    AuthCustomTextField(
-                        value = storeName,
-                        onValueChange = { storeName = it },
-                        label = "Nama Toko / Usaha",
-                        icon = Icons.Default.Store,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    AuthCustomTextField(
-                        value = ownerName,
-                        onValueChange = { ownerName = it },
-                        label = "Nama Owner / Penanggung Jawab",
-                        icon = Icons.Default.Person,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    AuthCustomTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = "Nomor WhatsApp Toko",
-                        icon = Icons.Default.Phone,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    AuthCustomTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = "Email Usaha",
-                        icon = Icons.Default.Email,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    AuthCustomTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = "Kata Sandi",
-                        icon = Icons.Default.Lock,
-                        isPassword = true,
-                        enabled = !isLoading
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Button(
-                        onClick = onSignUp,
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(25.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
-                        enabled = !isLoading,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                            .padding(horizontal = 24.dp, vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
+                        Text(
+                            text = "Registrasi Merchant",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            color = Slate800,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
                             Text(
-                                text = "Daftarkan Merchant",
+                                text = "Sudah Punya Akun? ",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Masuk",
+                                fontSize = 13.sp,
+                                color = Emerald600,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
+                                modifier = Modifier.clickable { onNavigateToSignIn() }
                             )
                         }
-                    }
 
-                    Spacer(Modifier.height(14.dp))
+                        Spacer(Modifier.height(22.dp))
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        HorizontalDivider(
-                            modifier = Modifier.weight(1f),
-                            color = Slate200
+                        AuthCustomTextField(
+                            value = storeName,
+                            onValueChange = { storeName = it },
+                            label = "Nama Toko / Usaha",
+                            icon = Icons.Default.Store,
+                            enabled = !isLoading
                         )
-                        Text(
-                            text = "Atau Masuk Dengan",
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                            fontSize = 12.sp,
-                            color = Slate400,
-                            fontWeight = FontWeight.Medium
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.weight(1f),
-                            color = Slate200
-                        )
-                    }
 
-                    Surface(
-                        onClick = onSignUp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, Slate200),
-                        shadowElevation = 1.dp
-                    ) {
+                        Spacer(Modifier.height(14.dp))
+
+                        AuthCustomTextField(
+                            value = ownerName,
+                            onValueChange = { ownerName = it },
+                            label = "Nama Owner / Penanggung Jawab",
+                            icon = Icons.Default.Person,
+                            enabled = !isLoading
+                        )
+
+                        Spacer(Modifier.height(14.dp))
+
+                        AuthCustomTextField(
+                            value = phone,
+                            onValueChange = { phone = it },
+                            label = "Nomor WhatsApp Toko",
+                            icon = Icons.Default.Phone,
+                            enabled = !isLoading
+                        )
+
+                        Spacer(Modifier.height(14.dp))
+
+                        AuthCustomTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = "Email Usaha",
+                            icon = Icons.Default.Email,
+                            enabled = !isLoading
+                        )
+
+                        Spacer(Modifier.height(14.dp))
+
+                        AuthCustomTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Kata Sandi",
+                            icon = Icons.Default.Lock,
+                            isPassword = true,
+                            enabled = !isLoading
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Button(
+                            onClick = onSignUp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(25.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
+                            enabled = !isLoading,
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = "Daftarkan Merchant",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(14.dp))
+
                         Row(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            GoogleLogoIcon(modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(10.dp))
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = Slate200
+                            )
                             Text(
-                                text = "Lanjutkan dengan Google",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = Slate800
+                                text = "Atau Masuk Dengan",
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                fontSize = 12.sp,
+                                color = Slate400,
+                                fontWeight = FontWeight.Medium
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = Slate200
                             )
                         }
-                    }
 
-                    Spacer(Modifier.height(60.dp))
+                        Surface(
+                            onClick = onSignUp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Slate200),
+                            shadowElevation = 1.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                GoogleLogoIcon(modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = "Lanjutkan dengan Google",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = Slate800
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(60.dp))
+                    }
                 }
             }
         }
@@ -882,7 +952,7 @@ fun ForgotPasswordScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFEFF2EF))
     ) {
         AuthHeaderSection(
             title = "Lupa Kata Sandi Merchant?",
@@ -907,84 +977,88 @@ fun ForgotPasswordScreen(
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 500.dp),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = Color.White,
+                color = Color(0xFFEFF2EF),
                 shadowElevation = 12.dp
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Reset Kata Sandi",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Slate800,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Sudah ingat kata sandi? ",
-                            fontSize = 13.sp,
-                            color = Slate500,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Masuk",
-                            fontSize = 13.sp,
-                            color = Emerald600,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable { onNavigateToSignIn() }
-                        )
-                    }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    AuthFormGridCanvas()
 
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "Kami akan mengirimkan kode OTP atau instruksi pemulihan kata sandi.",
-                        fontSize = 12.sp,
-                        color = Slate500,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 16.sp
-                    )
-
-                    Spacer(Modifier.height(22.dp))
-
-                    AuthCustomTextField(
-                        value = identity,
-                        onValueChange = { identity = it },
-                        label = "No. Handphone / Email Toko",
-                        icon = Icons.Default.Person,
-                        enabled = !isLoading && !isSubmitted
-                    )
-
-                    Spacer(Modifier.height(22.dp))
-
-                    Button(
-                        onClick = {
-                            isSubmitted = true
-                            onResetPassword()
-                        },
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(25.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
-                        enabled = !isLoading && identity.isNotBlank(),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                            .padding(horizontal = 24.dp, vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Kirim Kode OTP",
+                            text = "Reset Kata Sandi",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            fontSize = 22.sp,
+                            color = Slate800,
+                            textAlign = TextAlign.Center
                         )
-                    }
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Sudah ingat kata sandi? ",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Masuk",
+                                fontSize = 13.sp,
+                                color = Emerald600,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.clickable { onNavigateToSignIn() }
+                            )
+                        }
 
-                    Spacer(Modifier.height(60.dp))
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Kami akan mengirimkan kode OTP atau instruksi pemulihan kata sandi.",
+                            fontSize = 12.sp,
+                            color = Slate500,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 16.sp
+                        )
+
+                        Spacer(Modifier.height(22.dp))
+
+                        AuthCustomTextField(
+                            value = identity,
+                            onValueChange = { identity = it },
+                            label = "No. Handphone / Email Toko",
+                            icon = Icons.Default.Person,
+                            enabled = !isLoading && !isSubmitted
+                        )
+
+                        Spacer(Modifier.height(22.dp))
+
+                        Button(
+                            onClick = {
+                                isSubmitted = true
+                                onResetPassword()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(25.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
+                            enabled = !isLoading && identity.isNotBlank(),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Text(
+                                text = "Kirim Kode OTP",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+
+                        Spacer(Modifier.height(60.dp))
+                    }
                 }
             }
         }
