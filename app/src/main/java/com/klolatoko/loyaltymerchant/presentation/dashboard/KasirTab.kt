@@ -418,29 +418,25 @@ fun KasirGreenHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
             .background(
-                Brush.radialGradient(
+                Brush.verticalGradient(
                     colors = listOf(
-                        Emerald400,
-                        Emerald500,
                         Emerald600,
                         Emerald700
-                    ),
-                    radius = 1200f
+                    )
                 )
             )
     ) {
-        // Ambient Canvas Circles (from loyalty-app SplashScreen style)
+        // Ambient Canvas Circles (from loyalty-app style)
         Canvas(modifier = Modifier.matchParentSize()) {
             val w = size.width
             val h = size.height
             val centerOffset = Offset(w * 0.85f, h * 0.3f)
 
-            drawCircle(color = Color.White.copy(alpha = 0.06f), radius = w * 0.95f, center = centerOffset)
-            drawCircle(color = Color.White.copy(alpha = 0.08f), radius = w * 0.72f, center = centerOffset)
-            drawCircle(color = Color.White.copy(alpha = 0.10f), radius = w * 0.50f, center = centerOffset)
-            drawCircle(color = Color.White.copy(alpha = 0.12f), radius = w * 0.32f, center = centerOffset)
+            drawCircle(color = Color.White.copy(alpha = 0.05f), radius = w * 0.95f, center = centerOffset)
+            drawCircle(color = Color.White.copy(alpha = 0.06f), radius = w * 0.72f, center = centerOffset)
+            drawCircle(color = Color.White.copy(alpha = 0.07f), radius = w * 0.50f, center = centerOffset)
+            drawCircle(color = Color.White.copy(alpha = 0.08f), radius = w * 0.32f, center = centerOffset)
         }
 
         Column(
