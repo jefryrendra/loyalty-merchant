@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -31,10 +30,10 @@ import com.klolatoko.loyaltymerchant.presentation.theme.*
 @Composable
 fun PengaturanTab(
     settings: MerchantSettings,
+    activeSubScreen: String,
+    onActiveSubScreenChange: (String) -> Unit,
     onSaveSettings: (type: String, targetStamps: Int, rewardTitle: String, autoResetPin: Boolean) -> Unit
 ) {
-    var activeSubScreen by remember { mutableStateOf("main") }
-
     var selectedType by remember(settings.type) { mutableStateOf(settings.type) }
     var targetStampsText by remember(settings.targetStamps) { mutableStateOf(settings.targetStamps.toString()) }
     var rewardTitleText by remember(settings.rewardTitle) { mutableStateOf(settings.rewardTitle) }
@@ -61,7 +60,7 @@ fun PengaturanTab(
     val currentTypeLabel = options.find { it.first == selectedType }?.second ?: options[0].second
 
     if (activeSubScreen != "main") {
-        BackHandler { activeSubScreen = "main" }
+        BackHandler { onActiveSubScreenChange("main") }
     }
 
     Column(
@@ -181,31 +180,31 @@ fun PengaturanTab(
                     ProfileMenuItem(
                         icon = Icons.Default.Settings,
                         label = "Pengaturan Akun",
-                        onClick = { activeSubScreen = "account" }
+                        onClick = { onActiveSubScreenChange("account") }
                     )
                     HorizontalDivider(color = Slate100, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
                     ProfileMenuItem(
                         icon = Icons.Default.Loyalty,
                         label = "Pengaturan Skema Loyalty",
-                        onClick = { activeSubScreen = "loyalty" }
+                        onClick = { onActiveSubScreenChange("loyalty") }
                     )
                     HorizontalDivider(color = Slate100, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
                     ProfileMenuItem(
                         icon = Icons.Default.Storefront,
                         label = "Pengaturan Store & POS",
-                        onClick = { activeSubScreen = "store" }
+                        onClick = { onActiveSubScreenChange("store") }
                     )
                     HorizontalDivider(color = Slate100, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
                     ProfileMenuItem(
                         icon = Icons.Default.Info,
                         label = "Tentang Aplikasi",
-                        onClick = { activeSubScreen = "about" }
+                        onClick = { onActiveSubScreenChange("about") }
                     )
                     HorizontalDivider(color = Slate100, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
                     ProfileMenuItem(
                         icon = Icons.Default.VerifiedUser,
                         label = "Kebijakan Privasi",
-                        onClick = { activeSubScreen = "privacy" }
+                        onClick = { onActiveSubScreenChange("privacy") }
                     )
                 }
             }
@@ -258,42 +257,6 @@ fun PengaturanTab(
 
         } else {
             // ==================== SUB-SCREEN VIEWS ====================
-            
-            // Sub-Screen Header Top Bar
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
-            ) {
-                IconButton(
-                    onClick = { activeSubScreen = "main" },
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(Slate100)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali",
-                        tint = Slate800,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    text = when (activeSubScreen) {
-                        "account" -> "Pengaturan Akun"
-                        "loyalty" -> "Pengaturan Skema Loyalty"
-                        "store" -> "Pengaturan Store & POS"
-                        "about" -> "Tentang Aplikasi"
-                        "privacy" -> "Kebijakan Privasi"
-                        else -> "Pengaturan"
-                    },
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Slate800
-                )
-            }
-
             when (activeSubScreen) {
                 "account" -> {
                     SettingsGroup(title = "Profil Toko") {
@@ -368,7 +331,7 @@ fun PengaturanTab(
                         onClick = {
                             val parsedTarget = targetStampsText.toIntOrNull() ?: 10
                             onSaveSettings(selectedType, parsedTarget, rewardTitleText, autoResetPinChecked)
-                            activeSubScreen = "main"
+                            onActiveSubScreenChange("main")
                         },
                         modifier = Modifier
                             .fillMaxWidth()

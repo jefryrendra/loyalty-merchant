@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
@@ -84,6 +85,7 @@ fun GridBackground(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainDashboardScreen(
     viewModel: DashboardViewModel
@@ -96,11 +98,20 @@ fun MainDashboardScreen(
     val threshold = with(density) { 80.dp.toPx() }
     val collapseProgress = (scrollState.value / threshold).coerceIn(0f, 1f)
 
+    var activePengaturanSubScreen by remember { mutableStateOf("main") }
+
+    LaunchedEffect(uiState.selectedTab) {
+        if (uiState.selectedTab != MerchantTab.PENGATURAN) {
+            activePengaturanSubScreen = "main"
+        }
+    }
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             val insetsController = WindowCompat.getInsetsController(window, view)
-            insetsController.isAppearanceLightStatusBars = false
+            val isSubScreen = uiState.selectedTab == MerchantTab.PENGATURAN && activePengaturanSubScreen != "main"
+            insetsController.isAppearanceLightStatusBars = isSubScreen
         }
     }
 
@@ -114,12 +125,41 @@ fun MainDashboardScreen(
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            MerchantHeaderSection(
-                storeName = uiState.merchantProfile.storeName,
-                pendingCount = uiState.pendingClaims.size,
-                collapseProgress = collapseProgress,
-                onNotificationClick = { viewModel.selectTab(MerchantTab.APPROVAL) }
-            )
+            if (uiState.selectedTab == MerchantTab.PENGATURAN && activePengaturanSubScreen != "main") {
+                val subTitle = when (activePengaturanSubScreen) {
+                    "account" -> "Pengaturan Akun"
+                    "loyalty" -> "Pengaturan Skema Loyalty"
+                    "store" -> "Pengaturan Store & POS"
+                    "about" -> "Tentang Aplikasi"
+                    "privacy" -> "Kebijakan Privasi"
+                    else -> "Pengaturan"
+                }
+                CenterAlignedTopAppBar(
+                    windowInsets = WindowInsets.statusBars,
+                    title = { Text(subTitle, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                    navigationIcon = {
+                        IconButton(onClick = { activePengaturanSubScreen = "main" }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Kembali",
+                                tint = Slate800
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = Slate800,
+                        navigationIconContentColor = Slate800
+                    )
+                )
+            } else {
+                MerchantHeaderSection(
+                    storeName = uiState.merchantProfile.storeName,
+                    pendingCount = uiState.pendingClaims.size,
+                    collapseProgress = collapseProgress,
+                    onNotificationClick = { viewModel.selectTab(MerchantTab.APPROVAL) }
+                )
+            }
         },
         bottomBar = {
             BottomNavigationBar(
@@ -178,6 +218,8 @@ fun MainDashboardScreen(
 
                     MerchantTab.PENGATURAN -> PengaturanTab(
                         settings = uiState.settings,
+                        activeSubScreen = activePengaturanSubScreen,
+                        onActiveSubScreenChange = { activePengaturanSubScreen = it },
                         onSaveSettings = { type, target, title, autoReset ->
                             viewModel.saveSettings(type, target, title, autoReset)
                         }
